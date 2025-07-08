@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Food Quality Analyzer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Food Quality Analyzer</h1>
+    <form id="qualityForm">
+      <label for="moisture">Moisture (%):</label>
+      <input type="number" id="moisture" required>
+
+      <label for="ph">pH Level:</label>
+      <input type="number" step="0.1" id="ph" required>
+
+      <label for="color">Color (1-10 scale):</label>
+      <input type="number" id="color" min="1" max="10" required>
+
+      <button type="submit">Analyze</button>
+    </form>
+
+    <div id="result"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
