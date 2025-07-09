@@ -7,7 +7,7 @@ document.getElementById("qualityForm").addEventListener("submit", function (even
   const ph = parseFloat(document.getElementById("ph").value);
   const color = parseInt(document.getElementById("color").value);
   const microbial = parseFloat(document.getElementById("microbial").value);
-  const result = document.getElementById("result");
+  const resultBox = document.getElementById("result");
   const suggestionBox = document.getElementById("suggestion");
 
   const standards = {
@@ -21,6 +21,49 @@ document.getElementById("qualityForm").addEventListener("submit", function (even
     canned:    { moisture: 30, tempMin: 20, tempMax: 40, phMin: 4.2, phMax: 6.0, color: 5, microMax: 0 }
   };
 
+  const reasons = {
+    moisture: "High moisture increases water activity (aw), promoting microbial spoilage. Ref: FAO Codex.",
+    temperature: "Improper temperature encourages bacterial growth, especially between 5–60°C. Ref: FDA Food Code.",
+    ph: "Unsafe pH allows survival of pathogens like Clostridium botulinum. Ref: ICMSF, 2001.",
+    color: "Abnormal color may indicate spoilage or oxidation. Ref: Mehta et al., 2013.",
+    microbial: "High microbial load indicates contamination or poor hygiene. Ref: Jay, Modern Food Microbiology."
+  };
+
+  const s = standards[category];
+  if (!s) {
+    resultBox.innerHTML = "<span class='fail'>❌ Please select a valid category.</span>";
+    return;
+  }
+
+  const checks = {
+    moisture: moisture <= s.moisture,
+    temperature: temperature >= s.tempMin && temperature <= s.tempMax,
+    ph: ph >= s.phMin && ph <= s.phMax,
+    color: color >= s.color,
+    microbial: microbial <= s.microMax
+  };
+
+  const failed = Object.keys(checks).filter(key => !checks[key]);
+
+  let output = failed.length === 0
+    ? "<h3 style='color:green'>✅ Food Quality: ACCEPTABLE</h3>"
+    : "<h3 style='color:red'>❌ Food Quality: NOT ACCEPTABLE</h3>";
+
+  for (const key of Object.keys(checks)) {
+    output += `<div class="${checks[key] ? 'pass' : 'fail'}">${key.charAt(0).toUpperCase() + key.slice(1)}: ${checks[key] ? '✔ Passed' : '✖ Failed'}</div>`;
+  }
+
+  if (failed.length > 0) {
+    output += "<div class='reason'><strong>Reason(s) for Rejection:</strong><ul>";
+    failed.forEach(f => {
+      output += `<li><b>${f}:</b> ${reasons[f]}</li>`;
+    });
+    output += "</ul></div>";
+  }
+
+  resultBox.innerHTML = output;
+
+  // Suggestion & expiry
   const preserveMethods = {
     juice: "Refrigeration or pasteurization.",
     bakery: "Vacuum packaging or low-moisture storage.",
@@ -32,72 +75,21 @@ document.getElementById("qualityForm").addEventListener("submit", function (even
     canned: "Retort sterilization and dry storage."
   };
 
-  if (!standards[category]) {
-    result.innerHTML = "<span class='fail'>❌ Please select a valid food category.</span>";
-    return;
-  }
+  let microStatus = microbial > s.microMax * 10
+    ? "⚠️ Extremely high microbial load! Risk of food poisoning."
+    : microbial > s.microMax * 2
+      ? "⚠️ High microbial risk. May cause illness."
+      : "✅ Microbial level is safe.";
 
-  const s = standards[category];
-  const checks = {
-    moisture: moisture <= s.moisture,
-    temperature: temperature >= s.tempMin && temperature <= s.tempMax,
-    ph: ph >= s.phMin && ph <= s.phMax,
-    color: color >= s.color,
-    microbial: microbial <= s.microMax
-  };
+  let expiry = microbial > s.microMax * 10 ? 0 :
+               microbial > s.microMax * 2 ? 1 :
+               microbial > s.microMax ? 3 :
+               category === "canned" ? 180 : 7;
 
-  let messages = [];
-
-  function check(condition, name) {
-    if (condition) {
-      messages.push(`✅ ${name} OK`);
-      return `<div class="pass">${name}: ✔ Passed</div>`;
-    } else {
-      messages.push(`❌ ${name} FAILED`);
-      return `<div class="fail">${name}: ✖ Failed</div>`;
-    }
-  }
-
-  const allOk = Object.values(checks).every(Boolean);
-  const details = `
-    ${check(checks.moisture, "Moisture")}
-    ${check(checks.temperature, "Temperature")}
-    ${check(checks.ph, "pH")}
-    ${check(checks.color, "Color")}
-    ${check(checks.microbial, "Microbial Load")}
-  `;
-
-  result.innerHTML = (allOk
-    ? "<h3 style='color:green'>✅ Food Quality: ACCEPTABLE</h3>"
-    : "<h3 style='color:red'>❌ Food Quality: NOT ACCEPTABLE</h3>"
-  ) + details;
-
-  // Microbial impact
-  let microStatus = "";
-  if (microbial > s.microMax * 10) {
-    microStatus = "⚠️ Extremely high microbial load! Immediate disposal recommended.";
-  } else if (microbial > s.microMax * 2) {
-    microStatus = "⚠️ Microbial risk is high. May cause foodborne illness.";
-  } else {
-    microStatus = "✅ Microbial level is within safe range.";
-  }
-
-  // Expiry prediction
-  let expiryDays = 7; // base estimate
-  if (microbial > s.microMax * 10) expiryDays = 0;
-  else if (microbial > s.microMax * 2) expiryDays = 1;
-  else if (microbial > s.microMax) expiryDays = 3;
-  else expiryDays = category === "canned" ? 180 : 7;
-
-  // Preservation suggestion
-  const suggestionText = `
+  suggestionBox.innerHTML = `
     <h4>📋 Suggestions:</h4>
     <p>${microStatus}</p>
-    <p><strong>Recommended Preservation:</strong> ${preserveMethods[category]}</p>
-    <p><strong>Estimated Expiry:</strong> ${expiryDays} day(s)</p>
+    <p><strong>Preservation Tip:</strong> ${preserveMethods[category]}</p>
+    <p><strong>Estimated Expiry:</strong> ${expiry} day(s)</p>
   `;
-  suggestionBox.innerHTML = suggestionText;
 });
-
-
- 
