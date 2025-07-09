@@ -1,27 +1,27 @@
 body {
   font-family: Arial, sans-serif;
-  background: #f0f5f9;
+  background: #f1f1f1;
   margin: 0;
   padding: 0;
 }
 
 .container {
   max-width: 500px;
-  margin: 50px auto;
-  background: white;
+  margin: 40px auto;
+  background: #fff;
   padding: 25px;
   border-radius: 12px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  box-shadow: 0 0 12px rgba(0,0,0,0.1);
 }
 
 h1 {
   text-align: center;
-  color: #1a73e8;
+  color: #2196f3;
 }
 
 label {
+  margin-top: 12px;
   display: block;
-  margin-top: 15px;
 }
 
 input, select {
@@ -36,84 +36,29 @@ button {
   margin-top: 20px;
   width: 100%;
   padding: 10px;
-  background-color: #1a73e8;
+  background: #2196f3;
   color: white;
+  font-size: 16px;
   border: none;
   border-radius: 8px;
-  font-size: 16px;
   cursor: pointer;
 }
 
-#result {
-  margin-top: 20px;
-  font-weight: bold;
-}
-
-.pass {
-  color: green;
-  margin-top: 8px;
-}
-
-.fail {
-  color: red;
-  margin-top: 8px;
-}
-
-.bar {
-  background: #eee;
-  border-radius: 6px;
-  margin: 6px 0;
-  overflow: hidden;
-  height: 15px;
-}
-
-.bar-fill {
-  height: 100%;
-  text-align: right;
-  padding-right: 5px;
-  color: white;
-  font-size: 12px;
-  line-height: 15px;
-}
-
-.pass .bar-fill { background: green; }
-.fail .bar-fill { background: red; }
-
-.home {
-  text-align: center;
-}
-
-.features {
-  text-align: left;
+#result, #suggestion {
   margin-top: 20px;
   padding: 15px;
-  background: #e3f2fd;
+  background: #f9f9f9;
   border-radius: 10px;
   font-size: 15px;
 }
 
-.features ul {
-  list-style-type: none;
-  padding: 0;
-}
+.pass { color: green; }
+.fail { color: red; }
 
-.features li::before {
-  content: "🍽️ ";
-  margin-right: 6px;
-}
-
-.button {
-  display: inline-block;
-  margin-top: 25px;
-  padding: 12px 24px;
-  background-color: #1a73e8;
-  color: white;
-  border-radius: 8px;
-  font-size: 16px;
-  text-decoration: none;
-  transition: background-color 0.3s;
-}
-
-.button:hover {
-  background-color: #0c58c4;
+.reason {
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+  padding: 8px;
+  margin-top: 10px;
+  font-size: 14px;
 }
