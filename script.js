@@ -8,6 +8,7 @@ document.getElementById("qualityForm").addEventListener("submit", function (even
   const color = parseInt(document.getElementById("color").value);
   const microbial = parseFloat(document.getElementById("microbial").value);
   const result = document.getElementById("result");
+  const suggestionBox = document.getElementById("suggestion");
 
   const standards = {
     juice:     { moisture: 85, tempMin: 4, tempMax: 10, phMin: 3.0, phMax: 4.5, color: 5, microMax: 1000 },
@@ -18,6 +19,17 @@ document.getElementById("qualityForm").addEventListener("submit", function (even
     fish:      { moisture: 75, tempMin: -1, tempMax: 4, phMin: 6.0, phMax: 6.8, color: 5, microMax: 10000 },
     egg:       { moisture: 74, tempMin: 0, tempMax: 7, phMin: 7.6, phMax: 9.2, color: 6, microMax: 5000 },
     canned:    { moisture: 30, tempMin: 20, tempMax: 40, phMin: 4.2, phMax: 6.0, color: 5, microMax: 0 }
+  };
+
+  const preserveMethods = {
+    juice: "Refrigeration or pasteurization.",
+    bakery: "Vacuum packaging or low-moisture storage.",
+    beverage: "Cold chain maintenance and aseptic packaging.",
+    dairy: "Cold storage, pasteurization or fermentation.",
+    poultry: "Freezing below -18°C or vacuum packaging.",
+    fish: "Chilling on ice or freezing rapidly.",
+    egg: "Cold storage and UV sanitization.",
+    canned: "Retort sterilization and dry storage."
   };
 
   if (!standards[category]) {
@@ -38,20 +50,15 @@ document.getElementById("qualityForm").addEventListener("submit", function (even
 
   function check(condition, name) {
     if (condition) {
-      messages.push(`✅ ${name} is OK`);
-      return `<div class="pass">${name}: ✔ Passed
-        <div class="bar"><div class="bar-fill" style="width:100%;">OK</div></div>
-      </div>`;
+      messages.push(`✅ ${name} OK`);
+      return `<div class="pass">${name}: ✔ Passed</div>`;
     } else {
       messages.push(`❌ ${name} FAILED`);
-      return `<div class="fail">${name}: ✖ Failed
-        <div class="bar"><div class="bar-fill" style="width:50%;">Check</div></div>
-      </div>`;
+      return `<div class="fail">${name}: ✖ Failed</div>`;
     }
   }
 
   const allOk = Object.values(checks).every(Boolean);
-
   const details = `
     ${check(checks.moisture, "Moisture")}
     ${check(checks.temperature, "Temperature")}
@@ -65,24 +72,32 @@ document.getElementById("qualityForm").addEventListener("submit", function (even
     : "<h3 style='color:red'>❌ Food Quality: NOT ACCEPTABLE</h3>"
   ) + details;
 
-  // OPTIONAL: Send to Google Sheets if URL is provided
-  const sheetURL = "YOUR_GOOGLE_SCRIPT_WEB_APP_URL"; // Replace with your own
-  if (sheetURL) {
-    const payload = {
-      category,
-      moisture,
-      temperature,
-      ph,
-      color,
-      microbial,
-      result: allOk ? "ACCEPTABLE" : "NOT ACCEPTABLE"
-    };
-
-    fetch(sheetURL, {
-      method: "POST",
-      body: JSON.stringify(payload),
-      headers: { "Content-Type": "application/json" },
-    }).then(() => console.log("✅ Saved to Google Sheet"));
+  // Microbial impact
+  let microStatus = "";
+  if (microbial > s.microMax * 10) {
+    microStatus = "⚠️ Extremely high microbial load! Immediate disposal recommended.";
+  } else if (microbial > s.microMax * 2) {
+    microStatus = "⚠️ Microbial risk is high. May cause foodborne illness.";
+  } else {
+    microStatus = "✅ Microbial level is within safe range.";
   }
+
+  // Expiry prediction
+  let expiryDays = 7; // base estimate
+  if (microbial > s.microMax * 10) expiryDays = 0;
+  else if (microbial > s.microMax * 2) expiryDays = 1;
+  else if (microbial > s.microMax) expiryDays = 3;
+  else expiryDays = category === "canned" ? 180 : 7;
+
+  // Preservation suggestion
+  const suggestionText = `
+    <h4>📋 Suggestions:</h4>
+    <p>${microStatus}</p>
+    <p><strong>Recommended Preservation:</strong> ${preserveMethods[category]}</p>
+    <p><strong>Estimated Expiry:</strong> ${expiryDays} day(s)</p>
+  `;
+  suggestionBox.innerHTML = suggestionText;
 });
 
+
+ 
